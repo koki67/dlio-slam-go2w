@@ -145,6 +145,92 @@ rviz2 -d /external/src/direct_lidar_inertial_odometry/launch/dlio.rviz
 
 If visualizing from an external PC, configure CycloneDDS to use the PC-side network interface on the same network (for example `wlan0`) and then run RViz on that PC.
 
+## Recording a SLAM Session
+
+To record sensor data and SLAM outputs for later review:
+
+1. Start the recording session (inside the container, from `/external/src`):
+
+```sh
+cd /external/src
+catmux_create_session record_catmux.yaml
+```
+
+Four tmux windows open — `imu_publisher`, `hesai_lidar_node`, `dlio` (same as the normal run) — plus a new `bag_record` window that records all SLAM topics to a timestamped directory under `/external/bags/`.
+
+To stop: press `Ctrl+C` in the `bag_record` window, then `tmux kill-session`.
+
+Bags are saved to `humble_ws/bags/` in this repository (= `/external/bags/` inside the container).
+
+**Check what was recorded:**
+
+```sh
+source /external/install/setup.bash
+ros2 bag info /external/bags/slam_YYYYMMDD_HHMMSS
+```
+
+> **What is recorded:** Only SLAM output topics needed for visualization — not raw sensor data. The dominant stream is `/dlio/odom_node/pointcloud/deskewed` (motion-corrected LiDAR scan, ~10 Hz). If disk space is tight, remove that topic from `record_catmux.yaml`; the accumulated map (`/map`) and trajectory (`/dlio/odom_node/keyframes`) will still replay correctly.
+
+## Playing Back a Recorded Session
+
+To replay a bag and see the mapping process in RViz2 (no robot or sensors needed):
+
+1. Open `humble_ws/src/playback_catmux.yaml` and set the `bag` parameter to the path of your bag directory:
+
+```yaml
+parameters:
+  bag: /external/bags/slam_20250301_143022   # ← change this
+```
+
+2. Start the playback session (inside the container, from `/external/src`):
+
+```sh
+cd /external/src
+catmux_create_session playback_catmux.yaml
+```
+
+Two tmux windows open: `bag_play` (replays all recorded topics with clock synchronization) and `rviz2` (shows the accumulated map and point clouds). The bag loops continuously.
+
+> **Trajectory in RViz:** The robot path is not recorded as a continuous line (the ROS path message grows without bound and would dominate bag size). Instead, enable the **Keyframes** display in the RViz Displays panel — it shows the sparse set of keyframe poses that traces the robot's route.
+
+To stop: press `Ctrl+C` in the `bag_play` window, then `tmux kill-session`.
+
+**To play back faster** (e.g., 2× speed), add `--rate 2.0` to the `ros2 bag play` command in `playback_catmux.yaml`.
+
+## Bag Playback on a Desktop via DevContainer
+
+If you want to replay bags on a desktop PC (not on the robot), use the VS Code DevContainer defined in `.devcontainer/`. It pulls `osrf/ros:humble-desktop` (amd64) with RViz2 and `ros2 bag` already installed — no manual Docker setup needed.
+
+### Prerequisites
+
+- VS Code with the **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
+- Docker installed on the desktop
+- On **Linux**: run `xhost +local:docker` once in your host terminal before opening the container (allows the container to draw GUI windows on your screen)
+- On **macOS**: install [XQuartz](https://www.xquartz.org), then set `DISPLAY=host.docker.internal:0` in `.devcontainer/devcontainer.json`
+- On **Windows**: WSLg provides display forwarding automatically; no extra steps needed
+
+### Steps
+
+1. Copy your bag directory from the robot to `humble_ws/bags/` on the desktop (e.g. via `scp` or a USB drive).
+
+2. Open this repository folder in VS Code. When prompted, click **Reopen in Container**, or run **Dev Containers: Reopen in Container** from the Command Palette (`Ctrl+Shift+P`).
+
+3. Once the container is ready, open two integrated terminals (`Ctrl+` `` ` ``):
+
+**Terminal 1 — play the bag:**
+```sh
+ros2 bag play humble_ws/bags/slam_YYYYMMDD_HHMMSS --clock --loop
+```
+
+**Terminal 2 — open RViz2:**
+```sh
+rviz2 -d config/dlio.rviz
+```
+
+RViz2 will show the dense map being built up, the current LiDAR scan, and the robot trajectory (keyframe poses). The bag loops continuously.
+
+> **Note:** `config/dlio.rviz` is a tracked copy of the RViz config pre-configured for playback (Keyframes display enabled, Trajectory display disabled since the path topic is not recorded). The robot-side docker uses the copy in `humble_ws/src/direct_lidar_inertial_odometry/launch/` instead.
+
 ## Quick Checks
 
 Inside container after startup:
