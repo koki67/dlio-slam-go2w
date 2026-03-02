@@ -26,14 +26,6 @@
   ],
 
   // Source ROS 2 automatically in every VS Code integrated terminal.
-  "postCreateCommand": "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc",
+  "postCreateCommand": "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc"
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        // ROS extension: topic/node explorer, launch support, syntax highlighting.
-        "ms-iot.vscode-ros"
-      ]
-    }
-  }
 }
