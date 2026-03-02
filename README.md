@@ -149,20 +149,44 @@ If visualizing from an external PC, configure CycloneDDS to use the PC-side netw
 
 To record sensor data and SLAM outputs for later review:
 
-1. Start the recording session (inside the container, from `/external/src`):
+1. **Start a persistent `screen` session on the robot host** so that recording survives SSH disconnections:
 
 ```sh
+screen -S slam
+```
+
+> Install `screen` if needed: `sudo apt install screen`
+
+2. Inside the screen session, start Docker and then the recording catmux session:
+
+```sh
+cd humble_ws
+bash ../docker/humble.sh
+```
+
+```sh
+# Now inside Docker:
 cd /external/src
 catmux_create_session record_catmux.yaml
 ```
 
 Four tmux windows open — `imu_publisher`, `hesai_lidar_node`, `dlio` (same as the normal run) — plus a new `bag_record` window that records all SLAM topics to a timestamped directory under `/external/bags/`.
 
-To stop cleanly: press `Ctrl+C` in the `bag_record` window (this flushes and closes the database), then `tmux kill-session` to end the whole session. To stop only recording while keeping SLAM running, press `Ctrl+C` in `bag_record` only.
+**To detach without stopping anything:** press `Ctrl+A` then `D` (screen detach). Recording continues in the background.
 
-**If the SSH connection drops mid-recording:** the tmux session keeps running on the robot — recording continues uninterrupted. SSH back in and run `tmux attach-session` to reattach and stop it cleanly.
+**If the SSH connection drops mid-recording:** `screen` keeps running on the robot. SSH back in and reattach:
 
-**If the robot is powered off without stopping the recording:** the data already written to disk is safe (rosbag2 uses SQLite3, which writes continuously). Only `metadata.yaml` may be missing. Recover it with:
+```sh
+screen -r slam
+```
+
+This returns you to the catmux session exactly where you left off. Use `Ctrl+B w` to navigate to the `bag_record` window.
+
+> **Why `screen` instead of just `tmux`:** Docker is started with `bash` as the container's main process (`docker run -it ... bash`). When SSH drops, an unprotected Docker session dies — recording stops. Running Docker inside a host-level `screen` session keeps the container alive. `screen` uses `Ctrl+A` as its prefix, so it does not conflict with catmux's `Ctrl+B` prefix inside the container.
+
+**To stop cleanly:** navigate to the `bag_record` window and press `Ctrl+C` (flushes and closes the database). Then run `tmux kill-session` to end the catmux session, `exit` to leave Docker, and `exit` to leave the screen session.
+
+**If the robot is powered off without stopping the recording:** the data already written to disk is safe (rosbag2 uses SQLite3, which writes continuously). Only `metadata.yaml` may be missing. Recover it after rebooting and entering the container:
 ```sh
 ros2 bag reindex /external/bags/slam_YYYYMMDD_HHMMSS
 ```
