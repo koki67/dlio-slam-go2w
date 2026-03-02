@@ -25,7 +25,7 @@ This top-level repository intentionally tracks only wrapper/config files:
 - `humble_ws/src/test_catmux.yaml`: launches IMU publisher + XT16 + D-LIO
 - `faq.html`: archived copy of the related TechShare FAQ page
 
-Dependency source repos under `humble_ws/src/` are local clones and are ignored by `.gitignore`.
+Dependency source repos under `humble_ws/src/` are git submodules pointing to GO2-W forks.
 
 ## Prerequisites
 
@@ -37,27 +37,25 @@ Dependency source repos under `humble_ws/src/` are local clones and are ignored 
 
 ## Setup
 
-1. Clone this repository.
+1. Clone this repository with all submodules.
 
 ```sh
-git clone https://github.com/koki67/d-lio-slam-go2w.git
+git clone --recurse-submodules https://github.com/koki67/d-lio-slam-go2w.git
 cd d-lio-slam-go2w
 ```
 
-2. Clone required ROS packages.
+This clones four dependency packages directly into `humble_ws/src/` with all GO2-W modifications already applied:
 
-```sh
-cd humble_ws/src
-git clone https://github.com/TechShare-inc/go2_unitree_ros2.git -b imu_publisher
-git clone https://github.com/TechShare-inc/HesaiLidar_ROS2_techshare.git
-git clone https://github.com/unitreerobotics/unitree_ros2.git
-git clone https://github.com/TechShare-inc/direct_lidar_inertial_odometry.git -b feature/ros2
-cd ../..
-```
+| Submodule | Fork | Branch |
+|---|---|---|
+| `go2_unitree_ros2` | koki67/go2_unitree_ros2 | `imu_publisher` |
+| `unitree_ros2` | koki67/unitree_ros2 | `master` |
+| `direct_lidar_inertial_odometry` | koki67/direct_lidar_inertial_odometry | `feature/ros2` |
+| `HesaiLidar_ROS2_techshare` | koki67/HesaiLidar_ROS2_techshare | `main` |
 
-Note: the TechShare article previously referenced `HesaiLidar_General_ROS-ROS2`; this repository uses `HesaiLidar_ROS2_techshare`.
+> If you already cloned without `--recurse-submodules`, run: `git submodule update --init --recursive`
 
-3. Build Docker image.
+2. Build Docker image.
 
 ```sh
 cd docker
@@ -80,43 +78,6 @@ bash ../docker/humble.sh
 cd /external
 colcon build --symlink-install
 ```
-
-## GO2-W Required Code Adjustments
-
-Apply these edits in the cloned dependency repos inside `humble_ws/src`.
-
-1. `go2_unitree_ros2/src/devel/imu_publisher.cpp`
-
-- subscribe topic: `lowstate`
-- message type: `unitree_go::msg::LowState`
-- QoS: `rclcpp::SensorDataQoS()`
-- publish converted IMU to `/go2/imu`
-
-2. `unitree_ros2/setup.sh`
-
-- set DDS interfaces for both `eth0` and `wlan0`
-- use `rmw_cyclonedds_cpp`
-
-Current value used in this setup:
-
-```sh
-export CYCLONEDDS_URI='<CycloneDDS><Domain><General><Interfaces>
-                            <NetworkInterface name="eth0" priority="1" multicast="true" />
-                            <NetworkInterface name="wlan0" priority="2" multicast="true" />
-                        </Interfaces></General></Domain></CycloneDDS>'
-```
-
-3. `direct_lidar_inertial_odometry/cfg/params.yaml`
-
-Typical GO2-W tuning used here:
-
-- `use_sim_time: false`
-- `map/waitUntilMove: false`
-- `map/sparse/leafSize: 0.01`
-- `odom/preprocessing/cropBoxFilter/size: 0.4`
-- `odom/preprocessing/voxelFilter/res: 0.03`
-- `odom/keyframe/threshD: 0.4`
-- `odom/keyframe/threshR: 30.0`
 
 ## Run D-LIO
 
@@ -274,6 +235,6 @@ ros2 topic hz /go2/imu
 
 ## Notes on Version Control
 
-- Top-level repository tracks only orchestration/config files.
-- `humble_ws/src/*` dependency repos are ignored to avoid huge generated/unrelated changes.
-- If you want reproducibility across machines, push your modified dependency repos to your own forks and update clone URLs in this README.
+- Dependency repos under `humble_ws/src/` are git submodules pinned to specific commits in koki67's forks.
+- GO2-W modifications (lowstate IMU, DDS setup, DLIO params) are committed directly in those forks — no manual editing required after cloning.
+- To update a submodule to its latest fork commit: `cd humble_ws/src/<name> && git pull && cd ../../.. && git add humble_ws/src/<name> && git commit`

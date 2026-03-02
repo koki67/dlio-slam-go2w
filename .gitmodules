@@ -1,0 +1,15 @@
+[submodule "humble_ws/src/go2_unitree_ros2"]
+	path = humble_ws/src/go2_unitree_ros2
+	url = https://github.com/koki67/go2_unitree_ros2.git
+	branch = imu_publisher
+[submodule "humble_ws/src/unitree_ros2"]
+	path = humble_ws/src/unitree_ros2
+	url = https://github.com/koki67/unitree_ros2.git
+	branch = master
+[submodule "humble_ws/src/direct_lidar_inertial_odometry"]
+	path = humble_ws/src/direct_lidar_inertial_odometry
+	url = https://github.com/koki67/direct_lidar_inertial_odometry.git
+	branch = feature/ros2
+[submodule "humble_ws/src/HesaiLidar_ROS2_techshare"]
+	path = humble_ws/src/HesaiLidar_ROS2_techshare
+	url = https://github.com/koki67/HesaiLidar_ROS2_techshare.git

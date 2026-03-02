@@ -8,11 +8,6 @@ humble_ws/build/
 humble_ws/install/
 humble_ws/log/
 
-# External dependency repos cloned under humble_ws/src
-humble_ws/src/HesaiLidar_ROS2_techshare/
-humble_ws/src/direct_lidar_inertial_odometry/
-humble_ws/src/go2_unitree_ros2/
-humble_ws/src/unitree_ros2/
 
 # Bag recordings (large binary data, not tracked)
 humble_ws/bags/*/
