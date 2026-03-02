@@ -169,7 +169,7 @@ source /external/install/setup.bash
 ros2 bag info /external/bags/slam_YYYYMMDD_HHMMSS
 ```
 
-> **Note on disk space:** Recording all topics including point clouds can use 1–2 GB per minute. If space is limited, edit `record_catmux.yaml` and remove `/dlio/odom_node/pointcloud/deskewed` from the topic list (it is the highest-bandwidth stream).
+> **What is recorded:** Only SLAM output topics needed for visualization — not raw sensor data. The dominant stream is `/dlio/odom_node/pointcloud/deskewed` (motion-corrected LiDAR scan, ~10 Hz). If disk space is tight, remove that topic from `record_catmux.yaml`; the accumulated map (`/map`) and trajectory (`/dlio/odom_node/keyframes`) will still replay correctly.
 
 ## Playing Back a Recorded Session
 
@@ -189,7 +189,9 @@ cd /external/src
 catmux_create_session playback_catmux.yaml
 ```
 
-Two tmux windows open: `bag_play` (replays all recorded topics with clock synchronization) and `rviz2` (shows the trajectory, point clouds, and accumulated map). The bag loops continuously.
+Two tmux windows open: `bag_play` (replays all recorded topics with clock synchronization) and `rviz2` (shows the accumulated map and point clouds). The bag loops continuously.
+
+> **Trajectory in RViz:** The robot path is not recorded as a continuous line (the ROS path message grows without bound and would dominate bag size). Instead, enable the **Keyframes** display in the RViz Displays panel — it shows the sparse set of keyframe poses that traces the robot's route.
 
 To stop: press `Ctrl+C` in the `bag_play` window, then `tmux kill-session`.
 
