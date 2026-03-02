@@ -199,7 +199,7 @@ To stop: press `Ctrl+C` in the `bag_play` window, then `tmux kill-session`.
 
 ## Bag Playback on a Desktop via DevContainer
 
-If you want to replay bags on a desktop PC (not on the robot), use the VS Code DevContainer defined in `.devcontainer/`. It pulls the official `ros:humble-desktop` image (amd64) with RViz2 and `ros2 bag` already installed — no manual Docker setup needed.
+If you want to replay bags on a desktop PC (not on the robot), use the VS Code DevContainer defined in `.devcontainer/`. It pulls `osrf/ros:humble-desktop` (amd64) with RViz2 and `ros2 bag` already installed — no manual Docker setup needed.
 
 ### Prerequisites
 

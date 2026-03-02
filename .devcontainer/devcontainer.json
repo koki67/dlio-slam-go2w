@@ -3,9 +3,10 @@
   // For the robot-side SLAM stack, use docker/humble.sh instead.
   "name": "DLIO SLAM Bag Playback",
 
-  // Official ROS 2 Humble desktop image — includes rviz2, ros2bag, and all
+  // OSRF ROS 2 Humble desktop image — includes rviz2, ros2bag, and all
   // message types needed for playback. Pulls the amd64 variant on x86 desktops.
-  "image": "ros:humble-desktop",
+  // Note: the desktop variant lives under osrf/, not the official ros/ namespace.
+  "image": "osrf/ros:humble-desktop",
 
   "containerEnv": {
     // Forward the host X11 display so rviz2 renders on your desktop screen.
