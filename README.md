@@ -145,6 +145,56 @@ rviz2 -d /external/src/direct_lidar_inertial_odometry/launch/dlio.rviz
 
 If visualizing from an external PC, configure CycloneDDS to use the PC-side network interface on the same network (for example `wlan0`) and then run RViz on that PC.
 
+## Recording a SLAM Session
+
+To record sensor data and SLAM outputs for later review:
+
+1. Start the recording session (inside the container, from `/external/src`):
+
+```sh
+cd /external/src
+catmux_create_session record_catmux.yaml
+```
+
+Four tmux windows open — `imu_publisher`, `hesai_lidar_node`, `dlio` (same as the normal run) — plus a new `bag_record` window that records all SLAM topics to a timestamped directory under `/external/bags/`.
+
+To stop: press `Ctrl+C` in the `bag_record` window, then `tmux kill-session`.
+
+Bags are saved to `humble_ws/bags/` in this repository (= `/external/bags/` inside the container).
+
+**Check what was recorded:**
+
+```sh
+source /external/install/setup.bash
+ros2 bag info /external/bags/slam_YYYYMMDD_HHMMSS
+```
+
+> **Note on disk space:** Recording all topics including point clouds can use 1–2 GB per minute. If space is limited, edit `record_catmux.yaml` and remove `/dlio/odom_node/pointcloud/deskewed` from the topic list (it is the highest-bandwidth stream).
+
+## Playing Back a Recorded Session
+
+To replay a bag and see the mapping process in RViz2 (no robot or sensors needed):
+
+1. Open `humble_ws/src/playback_catmux.yaml` and set the `bag` parameter to the path of your bag directory:
+
+```yaml
+parameters:
+  bag: /external/bags/slam_20250301_143022   # ← change this
+```
+
+2. Start the playback session (inside the container, from `/external/src`):
+
+```sh
+cd /external/src
+catmux_create_session playback_catmux.yaml
+```
+
+Two tmux windows open: `bag_play` (replays all recorded topics with clock synchronization) and `rviz2` (shows the trajectory, point clouds, and accumulated map). The bag loops continuously.
+
+To stop: press `Ctrl+C` in the `bag_play` window, then `tmux kill-session`.
+
+**To play back faster** (e.g., 2× speed), add `--rate 2.0` to the `ros2 bag play` command in `playback_catmux.yaml`.
+
 ## Quick Checks
 
 Inside container after startup:
