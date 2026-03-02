@@ -1,0 +1,38 @@
+{
+  // Desktop bag playback environment (amd64).
+  // For the robot-side SLAM stack, use docker/humble.sh instead.
+  "name": "DLIO SLAM Bag Playback",
+
+  // Official ROS 2 Humble desktop image — includes rviz2, ros2bag, and all
+  // message types needed for playback. Pulls the amd64 variant on x86 desktops.
+  "image": "ros:humble-desktop",
+
+  "containerEnv": {
+    // Forward the host X11 display so rviz2 renders on your desktop screen.
+    // Linux only — see README for macOS / Windows notes.
+    "DISPLAY": "${localEnv:DISPLAY}",
+    // Prevents Qt rendering artifacts in Docker.
+    "QT_X11_NO_MITSHM": "1"
+  },
+
+  // Host networking is the simplest way to let ros2 bag play and rviz2
+  // discover each other via DDS without extra configuration.
+  "runArgs": ["--net=host"],
+
+  // Mount the host X11 socket so the container can open GUI windows.
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
+  ],
+
+  // Source ROS 2 automatically in every VS Code integrated terminal.
+  "postCreateCommand": "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // ROS extension: topic/node explorer, launch support, syntax highlighting.
+        "ms-iot.vscode-ros"
+      ]
+    }
+  }
+}
