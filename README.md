@@ -165,7 +165,38 @@ ros2 bag info /external/bags/slam_YYYYMMDD_HHMMSS
 
 ## Playing Back a Recorded Session
 
-To replay a bag and see the mapping process in RViz2 (no robot or sensors needed):
+Copy your bag directory from the robot to `humble_ws/bags/` on the desktop (e.g. via `scp` or a USB drive), then use the VS Code DevContainer defined in `.devcontainer/`. It pulls `osrf/ros:humble-desktop` (amd64) with RViz2 and `ros2 bag` already installed — no manual Docker setup needed.
+
+### Prerequisites
+
+- VS Code with the **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
+- Docker installed on the desktop
+- On **Linux**: run `xhost +local:docker` once in your host terminal before opening the container (allows the container to draw GUI windows on your screen)
+- On **macOS**: install [XQuartz](https://www.xquartz.org), then set `DISPLAY=host.docker.internal:0` in `.devcontainer/devcontainer.json`
+- On **Windows**: WSLg provides display forwarding automatically; no extra steps needed
+
+### Steps
+
+1. Open this repository folder in VS Code. When prompted, click **Reopen in Container**, or run **Dev Containers: Reopen in Container** from the Command Palette (`Ctrl+Shift+P`).
+
+2. Once the container is ready, open one integrated terminal and run:
+
+```sh
+bash config/playback.sh humble_ws/bags/slam_YYYYMMDD_HHMMSS
+```
+
+RViz2 opens automatically alongside the bag player. The bag loops continuously. Close the RViz2 window (or press `Ctrl+C`) to stop both.
+
+To play back at a different speed, add `--rate`:
+```sh
+bash config/playback.sh humble_ws/bags/slam_YYYYMMDD_HHMMSS --rate 2.0
+```
+
+> **Note:** `config/dlio.rviz` is a tracked copy of the RViz config pre-configured for playback (Keyframes display enabled, Trajectory display disabled since the path topic is not recorded). The robot-side docker uses the copy in `humble_ws/src/direct_lidar_inertial_odometry/launch/` instead.
+
+## Playing Back on the Robot
+
+To replay a bag directly on the robot without transferring it to a desktop:
 
 1. Open `humble_ws/src/playback_catmux.yaml` and set the `bag` parameter to the path of your bag directory:
 
@@ -188,39 +219,6 @@ Two tmux windows open: `bag_play` (replays all recorded topics with clock synchr
 To stop: press `Ctrl+C` in the `bag_play` window, then `tmux kill-session`.
 
 **To play back faster** (e.g., 2× speed), add `--rate 2.0` to the `ros2 bag play` command in `playback_catmux.yaml`.
-
-## Bag Playback on a Desktop via DevContainer
-
-If you want to replay bags on a desktop PC (not on the robot), use the VS Code DevContainer defined in `.devcontainer/`. It pulls `osrf/ros:humble-desktop` (amd64) with RViz2 and `ros2 bag` already installed — no manual Docker setup needed.
-
-### Prerequisites
-
-- VS Code with the **Dev Containers** extension (`ms-vscode-remote.remote-containers`)
-- Docker installed on the desktop
-- On **Linux**: run `xhost +local:docker` once in your host terminal before opening the container (allows the container to draw GUI windows on your screen)
-- On **macOS**: install [XQuartz](https://www.xquartz.org), then set `DISPLAY=host.docker.internal:0` in `.devcontainer/devcontainer.json`
-- On **Windows**: WSLg provides display forwarding automatically; no extra steps needed
-
-### Steps
-
-1. Copy your bag directory from the robot to `humble_ws/bags/` on the desktop (e.g. via `scp` or a USB drive).
-
-2. Open this repository folder in VS Code. When prompted, click **Reopen in Container**, or run **Dev Containers: Reopen in Container** from the Command Palette (`Ctrl+Shift+P`).
-
-3. Once the container is ready, open one integrated terminal and run:
-
-```sh
-bash config/playback.sh humble_ws/bags/slam_YYYYMMDD_HHMMSS
-```
-
-RViz2 opens automatically alongside the bag player. The bag loops continuously. Close the RViz2 window (or press `Ctrl+C`) to stop both.
-
-To play back at a different speed, add `--rate`:
-```sh
-bash config/playback.sh humble_ws/bags/slam_YYYYMMDD_HHMMSS --rate 2.0
-```
-
-> **Note:** `config/dlio.rviz` is a tracked copy of the RViz config pre-configured for playback (Keyframes display enabled, Trajectory display disabled since the path topic is not recorded). The robot-side docker uses the copy in `humble_ws/src/direct_lidar_inertial_odometry/launch/` instead.
 
 ## Quick Checks
 
