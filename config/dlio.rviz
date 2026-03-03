@@ -88,7 +88,7 @@ Visualization Manager:
           Color: 0; 255; 0
           Color Transformer: AxisColor
           Decay Time: 0
-          Enabled: true
+          Enabled: false
           Invert Rainbow: true
           Max Color: 255; 255; 255
           Max Intensity: 1024
@@ -105,7 +105,7 @@ Visualization Manager:
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
-          Value: true
+          Value: false
         - Alpha: 1
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
@@ -117,7 +117,7 @@ Visualization Manager:
           Class: rviz_default_plugins/PointCloud2
           Color: 0; 255; 0
           Color Transformer: AxisColor
-          Decay Time: 9999
+          Decay Time: 0
           Enabled: true
           Invert Rainbow: true
           Max Color: 255; 255; 255
