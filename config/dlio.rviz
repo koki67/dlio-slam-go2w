@@ -86,10 +86,10 @@ Visualization Manager:
           Channel Name: intensity
           Class: rviz_default_plugins/PointCloud2
           Color: 0; 255; 0
-          Color Transformer: Intensity
+          Color Transformer: AxisColor
           Decay Time: 0
           Enabled: true
-          Invert Rainbow: false
+          Invert Rainbow: true
           Max Color: 255; 255; 255
           Max Intensity: 1024
           Min Color: 0; 0; 0
@@ -106,7 +106,7 @@ Visualization Manager:
           Use Fixed Frame: true
           Use rainbow: true
           Value: true
-        - Alpha: 0.10000000149011612
+        - Alpha: 1
           Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 10
@@ -116,10 +116,10 @@ Visualization Manager:
           Channel Name: intensity
           Class: rviz_default_plugins/PointCloud2
           Color: 0; 255; 0
-          Color Transformer: Intensity
+          Color Transformer: AxisColor
           Decay Time: 9999
           Enabled: true
-          Invert Rainbow: false
+          Invert Rainbow: true
           Max Color: 255; 255; 255
           Max Intensity: 1024
           Min Color: 0; 0; 0
