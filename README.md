@@ -40,8 +40,8 @@ Dependency source repos under `humble_ws/src/` are git submodules pointing to GO
 1. Clone this repository with all submodules.
 
 ```sh
-git clone --recurse-submodules https://github.com/koki67/d-lio-slam-go2w.git
-cd d-lio-slam-go2w
+git clone --recurse-submodules https://github.com/koki67/dlio-slam-go2w.git
+cd dlio-slam-go2w
 ```
 
 This clones four dependency packages directly into `humble_ws/src/` with all GO2-W modifications already applied:
