@@ -14,7 +14,7 @@ This setup is adapted for **GO2-W**.
 Main difference from the original GO2 article flow:
 
 - GO2-W in this environment does not provide usable IMU from `sportmodestate`.
-- IMU is taken from `lowstate` and republished to `/go2/imu` for D-LIO.
+- IMU is taken from `lowstate` and republished to `/go2w/imu` for D-LIO.
 
 ## Repository Contents
 
@@ -59,7 +59,7 @@ This clones four dependency packages directly into `humble_ws/src/` with all GO2
 
 ```sh
 cd docker
-docker build -t go2-humble:latest .
+docker build -t go2w-humble:latest .
 cd ..
 ```
 
@@ -227,8 +227,8 @@ Inside container after startup:
 ```sh
 source /external/install/setup.bash
 source /external/src/unitree_ros2/setup.sh
-ros2 topic list | grep -E 'go2/imu|lowstate|hesai'
-ros2 topic hz /go2/imu
+ros2 topic list | grep -E 'go2w/imu|lowstate|hesai'
+ros2 topic hz /go2w/imu
 ```
 
 ## Acknowledgments
@@ -241,6 +241,17 @@ This repository builds on the work of the following projects:
 - **[HesaiLidar_ROS2_techshare](https://github.com/TechShare-inc/HesaiLidar_ROS2_techshare)** — TechShare Inc. / Hesai Technology. Licensed under Apache 2.0.
 
 The orchestration files in this repository (Docker setup, catmux sessions, config tuning) are original work and released under the [MIT License](LICENSE).
+
+## Naming Consistency
+
+This repository standardizes repo-owned runtime and documentation naming around **GO2-W** and `go2w`.
+
+Intentional `go2` leftovers remain where they refer to upstream or external identifiers that should not be renamed, including:
+
+- the `go2_demo` ROS package name
+- the `go2_unitree_ros2` submodule/repository name
+- external article and repository URLs such as `faq_go2_xt16` and `xt16-on-go2_d-lio.html`
+- the archived `faq.html` snapshot
 
 ## Notes on Version Control
 

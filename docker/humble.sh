@@ -25,4 +25,4 @@ docker run -it --rm \
   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
   --volume="$XAUTH:$XAUTH" \
   --volume="${PWD}:/external:rw" \
-  go2-humble:latest bash
+  go2w-humble:latest bash
