@@ -23,6 +23,8 @@ This top-level repository intentionally tracks only wrapper/config files:
 - `docker/Dockerfile`: ROS 2 Humble image for ARM64 Ubuntu Jammy
 - `docker/humble.sh`: starts the container with host network and X11
 - `humble_ws/src/test_catmux.yaml`: launches IMU publisher + XT16 + D-LIO
+- `humble_ws/src/record_catmux.yaml`: records D-LIO outputs for replay/visualization
+- `humble_ws/src/record_glim_raw_catmux.yaml`: records raw `/go2w/imu` + `/points_raw` for offline GLIM
 - `faq.html`: archived copy of the related TechShare FAQ page
 
 Dependency source repos under `humble_ws/src/` are git submodules pointing to GO2-W forks.
@@ -162,6 +164,92 @@ ros2 bag info /external/bags/slam_YYYYMMDD_HHMMSS
 ```
 
 > **What is recorded:** Only SLAM output topics needed for visualization — not raw sensor data. The dominant stream is `/dlio/odom_node/pointcloud/deskewed` (motion-corrected LiDAR scan, ~10 Hz). If disk space is tight, remove that topic from `record_catmux.yaml`; the accumulated map (`/map`) and trajectory (`/dlio/odom_node/keyframes`) will still replay correctly.
+
+## Recording a Raw-Sensor Bag for Offline GLIM
+
+Use this path when the goal is to generate a clean rosbag for **offline GLIM** on a desktop machine.
+
+This recording path is intentionally separate from `record_catmux.yaml`:
+
+- `record_catmux.yaml`: records D-LIO outputs plus `/tf` and `/tf_static` for replay/visualization
+- `record_glim_raw_catmux.yaml`: records only the raw inputs needed by offline GLIM
+
+The current default raw topics are:
+
+- `/go2w/imu`
+- `/points_raw`
+
+These come from the current live robot-side stack:
+
+- `ros2 run go2_demo imu_publisher` republishes IMU from `lowstate` onto `/go2w/imu`
+- `ros2 launch hesai_lidar hesai_lidar_launch.py` publishes LiDAR points on `/points_raw`
+
+The raw GLIM-input bag does **not** record D-LIO outputs, `/tf`, `/tf_static`, or `/map` by default. That keeps the bag minimal and avoids confusion when replaying it later for offline processing.
+
+Optional diagnostic topics are intentionally left out of the default bag:
+
+- `lowstate`: useful for debugging the IMU republisher input
+- `/pandar_packets`: useful for packet-level Hesai debugging or replay experiments
+
+If you need those topics for troubleshooting, add them explicitly to `record_glim_raw_catmux.yaml` for that recording session instead of keeping them in the default field workflow.
+
+### Start the raw-sensor recording session
+
+As with the SLAM-output recording flow, use a persistent `screen` session on the robot host so recording survives SSH disconnections:
+
+```sh
+screen -S glim_raw
+```
+
+Then start Docker and launch the raw recording catmux session:
+
+```sh
+cd humble_ws
+bash ../docker/humble.sh
+```
+
+```sh
+# Now inside Docker:
+cd /external/src
+catmux_create_session record_glim_raw_catmux.yaml
+```
+
+Three tmux windows open:
+
+- `imu_publisher`
+- `hesai_lidar_node`
+- `bag_record`
+
+The bag recorder writes to a timestamped directory under `/external/bags/` using this naming convention:
+
+```text
+/external/bags/glim_raw_YYYYMMDD_HHMMSS
+```
+
+### Check what was recorded
+
+After stopping the `bag_record` window with `Ctrl+C`, inspect the bag:
+
+```sh
+source /external/install/setup.bash
+ros2 bag info /external/bags/glim_raw_YYYYMMDD_HHMMSS
+```
+
+The default bag should contain exactly these required topics:
+
+- `/go2w/imu`
+- `/points_raw`
+
+### Verify suitability for the offline GLIM checker
+
+After copying the bag to the desktop, validate it with the checker from the desktop-side GLIM repository:
+
+```sh
+python3 /path/to/glim-slam-go2w/tools/check_glim_bag.py /path/to/glim_raw_bag \
+  --dlio-repo /path/to/dlio-slam-go2w
+```
+
+That checker should confirm that the bag includes the required raw IMU and LiDAR inputs for offline GLIM. Runtime validation with a real raw bag still needs to be done on the robot; this repository only adds the recording path and documentation.
 
 ## Playing Back a Recorded Session
 
