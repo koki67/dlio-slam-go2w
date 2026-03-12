@@ -8,6 +8,9 @@ humble_ws/build/
 humble_ws/install/
 humble_ws/log/
 
+# Desktop-only offline D-LIO build artifacts
+.devcontainer/offline_dlio/
+
 
 # Bag recordings (large binary data, not tracked)
 humble_ws/bags/*/

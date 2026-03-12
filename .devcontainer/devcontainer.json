@@ -1,12 +1,12 @@
 {
-  // Desktop bag playback environment (amd64).
+  // Desktop bag playback and shared-raw D-LIO reconstruction environment (amd64).
   // For the robot-side SLAM stack, use docker/humble.sh instead.
-  "name": "DLIO SLAM Bag Playback",
+  "name": "DLIO Shared Raw Desktop",
 
-  // OSRF ROS 2 Humble desktop image — includes rviz2, ros2bag, and all
-  // message types needed for playback. Pulls the amd64 variant on x86 desktops.
-  // Note: the desktop variant lives under osrf/, not the official ros/ namespace.
-  "image": "osrf/ros:humble-desktop",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
 
   "containerEnv": {
     // Forward the host X11 display so rviz2 renders on your desktop screen.
@@ -25,7 +25,7 @@
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
   ],
 
-  // Source ROS 2 automatically in every VS Code integrated terminal.
-  "postCreateCommand": "echo 'source /opt/ros/humble/setup.bash' >> ~/.bashrc"
+  // Install desktop-only build dependencies and build the D-LIO package once.
+  "postCreateCommand": "bash .devcontainer/postCreate.sh"
 
 }

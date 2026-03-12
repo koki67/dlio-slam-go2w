@@ -17,8 +17,12 @@ EXTRA_ARGS=("$@")
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROS_SETUP="/opt/ros/humble/setup.bash"
-WS_SETUP="$REPO_ROOT/humble_ws/install/setup.bash"
 RVIZ_CFG="$SCRIPT_DIR/dlio.rviz"
+WS_SETUP=""
+WS_SETUP_CANDIDATES=(
+    "$REPO_ROOT/.devcontainer/offline_dlio/install/setup.bash"
+    "$REPO_ROOT/humble_ws/install/setup.bash"
+)
 
 if [ ! -d "$BAG" ] && [ -d "$REPO_ROOT/$BAG" ]; then
     BAG="$REPO_ROOT/$BAG"
@@ -39,14 +43,34 @@ if [ ! -f "$ROS_SETUP" ]; then
     exit 1
 fi
 
-if [ ! -f "$WS_SETUP" ]; then
-    echo "Error: workspace setup not found: $WS_SETUP" >&2
-    echo "Build the workspace first, then rerun this script." >&2
+for candidate in "${WS_SETUP_CANDIDATES[@]}"; do
+    if [ -f "$candidate" ]; then
+        WS_SETUP="$candidate"
+        break
+    fi
+done
+
+if [ -z "$WS_SETUP" ]; then
+    echo "Error: no D-LIO workspace setup was found." >&2
+    echo "Looked for:" >&2
+    for candidate in "${WS_SETUP_CANDIDATES[@]}"; do
+        echo "  - $candidate" >&2
+    done
+    echo "Create the desktop devcontainer or build the workspace first, then rerun this script." >&2
     exit 1
 fi
 
 source "$ROS_SETUP"
 source "$WS_SETUP"
+
+if ! ros2 pkg prefix direct_lidar_inertial_odometry >/dev/null 2>&1; then
+    echo "Error: direct_lidar_inertial_odometry is not available after sourcing:" >&2
+    echo "  $WS_SETUP" >&2
+    if [ -f "$REPO_ROOT/.devcontainer/postCreate.sh" ]; then
+        echo "In the desktop devcontainer, rerun: bash .devcontainer/postCreate.sh" >&2
+    fi
+    exit 1
+fi
 
 cleanup() {
     echo "Stopping shared raw D-LIO reconstruction..."
@@ -66,6 +90,7 @@ trap cleanup EXIT INT TERM
 
 echo "Bag:  $BAG"
 echo "RViz: $RVIZ_CFG"
+echo "D-LIO setup: $WS_SETUP"
 echo "Mode: replay shared raw topics, run D-LIO offline, visualize generated outputs"
 echo ""
 
